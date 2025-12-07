@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Glow-Up Challenge Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+/* ---------- BASE STYLES ---------- */
+* { margin:0; padding:0; box-sizing:border-box; font-family:'Arial', sans-serif; }
+body { display:flex; min-height:100vh; background: linear-gradient(160deg,#e0f7fa,#b2ebf2); color:#111; overflow-x:hidden; }
+
+/* ---------- SIDEBAR ---------- */
+#sidebar { width:220px; background:#222; color:white; display:flex; flex-direction:column; padding:20px; }
+#sidebar h2 { text-align:center; margin-bottom:20px; font-size:1.5em; color:#00c853; }
+.sidebar-btn { padding:15px 10px; margin:8px 0; background:#333; border-radius:12px; text-align:center; cursor:pointer; transition:0.2s; }
+.sidebar-btn:hover, .active-btn { background:#00c853; }
+
+/* ---------- MAIN CONTENT ---------- */
+#main { flex:1; padding:30px; overflow-y:auto; }
+
+/* ---------- DASHBOARD CARDS ---------- */
+.card { background:white; padding:20px; border-radius:20px; box-shadow:0 8px 25px rgba(0,0,0,0.15); margin-bottom:25px; text-align:center; }
+.card h2 { margin-bottom:15px; color:#00796b; }
+
+/* ---------- PUSH-UP CIRCLE ---------- */
+#pushCircle { width:200px; height:200px; border-radius:50%; background:linear-gradient(135deg,#2196f3,#64b5f6); display:flex; align-items:center; justify-content:center; font-size:2.2em; color:white; margin:20px auto; box-shadow:0 5px 20px rgba(0,0,0,0.3); cursor:pointer; transition:0.3s; }
+#pushCircle:hover { transform: scale(1.05); }
+
+/* ---------- XP BAR ---------- */
+.progress-bar { height:28px; background:#eee; border-radius:20px; overflow:hidden; margin-top:10px; }
+.progress { height:100%; background:linear-gradient(135deg,#00c853,#1de9b6); text-align:center; font-weight:bold; line-height:28px; color:white; transition: width 0.4s ease; }
+
+/* ---------- RANK AND STREAK ---------- */
+.rank-display { display:flex; align-items:center; justify-content:center; margin:10px 0; font-size:1.2em; font-weight:bold; }
+.rank-display span { margin-left:10px; font-size:1.5em; }
+.streak-box { margin:15px auto; width:160px; padding:12px; border-radius:15px; color:white; font-weight:bold; text-align:center; background:#ff9800; box-shadow:0 5px 15px rgba(0,0,0,0.2); }
+
+/* ---------- BADGE BOOK ---------- */
+#badgeBookContainer { max-width:400px; margin:30px auto; perspective:1200px; }
+#badgeBook { width:100%; height:320px; background:#8b5e3c; border-radius:15px; position:relative; box-shadow:0 8px 25px rgba(0,0,0,0.3); cursor:pointer; padding:20px; color:white; }
+#badgeBook h3 { text-align:center; margin-bottom:10px; }
+.page { width:100%; height:220px; background:#d2b48c; border-radius:10px; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:1.2em; position:absolute; top:50px; left:0; transition:0.5s transform; }
+.page.hidden { transform: translateX(100%); }
+.nav-arrows { display:flex; justify-content:space-between; margin-top:10px; }
+.nav-arrows button { padding:10px 15px; border:none; border-radius:8px; background:#333; color:white; cursor:pointer; }
+.nav-arrows button:hover { background:#00c853; }
+
+/* ---------- RANK-UP ANIMATION ---------- */
+#rankUp { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg,#ffd700,#ff8f00); padding:25px 50px; border-radius:25px; font-size:2em; font-weight:bold; color:white; text-align:center; box-shadow:0 8px 25px rgba(0,0,0,0.3); z-index:9999; opacity:0; }
+.rank-particle { position:absolute; width:6px; height:6px; background:gold; border-radius:50%; pointer-events:none; opacity:1; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div id="sidebar">
+  <h2>Glow-Up</h2>
+  <div class="sidebar-btn active-btn" onclick="showSection('dashboard')">Dashboard</div>
+  <div class="sidebar-btn" onclick="showSection('challengeSection')">Challenges</div>
+  <div class="sidebar-btn" onclick="showSection('badgeSection')">Badge Book</div>
+  <div class="sidebar-btn">Rank: <span id="rankDisplay">Bronze ⭐</span></div>
+  <div class="sidebar-btn">🔥 Streak: <span id="streak">0</span></div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div id="main">
+
+  <!-- DASHBOARD -->
+  <div id="dashboard">
+    <div class="card">
+      <h2>Player Dashboard</h2>
+      <div class="rank-display">Level <span id="level">1</span> | <span id="rankDisplaySymbol">Bronze ⭐</span></div>
+      <div class="streak-box" id="streakBox">🔥 Streak: 0</div>
+      <div id="pushCircle" onclick="addPushup()">0</div>
+      <div class="progress-bar"><div class="progress" id="xpBar">0%</div></div>
+    </div>
+  </div>
+
+  <!-- CHALLENGES -->
+  <div id="challengeSection" style="display:none;">
+    <h2>⭐ Weekly Challenges</h2>
+    <div class="card">
+      <p>🏃 3km Run — +100 XP</p>
+      <button onclick="completeChallenge('run',100)">Complete</button>
+    </div>
+    <div class="card">
+      <p>💪 10 Pull-Ups — +75 XP</p>
+      <button onclick="completeChallenge('pull',75)">Complete</button>
+    </div>
+    <div class="card">
+      <p>🔥 Combo Challenge — +150 XP</p>
+      <button onclick="completeChallenge('combo',150)">Complete</button>
+    </div>
+  </div>
+
+  <!-- BADGE BOOK -->
+  <div id="badgeSection" style="display:none;">
+    <h2>🏆 Badge Book</h2>
+    <div id="badgeBookContainer">
+      <div id="badgeBook" onclick="openBook()">
+        <h3>📖 Click to open the book</h3>
+        <div class="page" id="page1">Bronze Badge ⭐</div>
+        <div class="page hidden" id="page2">Silver Badge ⭐⭐</div>
+        <div class="page hidden" id="page3">Gold Badge ⭐⭐⭐</div>
+      </div>
+      <div class="nav-arrows">
+        <button onclick="prevPage()">⬅ Prev</button>
+        <button onclick="nextPage()">Next ➡</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Rank-Up Animation -->
+<div id="rankUp" class="hidden"><div id="rankText"></div></div>
+
+<script>
+// ---------------- VARIABLES ----------------
+let pushups = 0;
+let streak = 0;
+let playerLevel = 1;
+let playerXP = 0;
+let currentRank = "Bronze";
+const rankThresholds = [
+  {level:1, rank:"Bronze", symbol:"⭐"},
+  {level:11, rank:"Silver", symbol:"⭐⭐"},
+  {level:21, rank:"Gold", symbol:"⭐⭐⭐"},
+  {level:31, rank:"Platinum", symbol:"💎"},
+  {level:41, rank:"Diamond", symbol:"💠"},
+  {level:51, rank:"Ruby", symbol:"🔴"},
+  {level:61, rank:"Emerald", symbol:"🟢"},
+  {level:71, rank:"Elite", symbol:"⚡"},
+  {level:81, rank:"Champion", symbol:"🏆"},
+  {level:91, rank:"Beast", symbol:"🐾"},
+  {level:101, rank:"Elite Platinum", symbol:"💎⚡"},
+  {level:111, rank:"Elite Diamond", symbol:"💠⚡"},
+  {level:121, rank:"Elite Ruby", symbol:"🔴⚡"},
+  {level:131, rank:"Elite Emerald", symbol:"🟢⚡"},
+  {level:141, rank:"Elite Champion", symbol:"🏆⚡"},
+  {level:151, rank:"Elite Beast", symbol:"🐾⚡"},
+  {level:161, rank:"Unstoppable Beast", symbol:"🔥🐾"}
+];
+
+// ---------------- PUSH-UP BANK ----------------
+function addPushup(){
+  pushups++;
+  streak++; // increment streak
+  document.getElementById('pushCircle').textContent = pushups;
+  document.getElementById('streak').textContent = streak;
+  document.getElementById('streakBox').textContent = `🔥 Streak: ${streak}`;
+  addXP(5); // 5 XP per pushup
+}
+
+// ---------------- SIDEBAR NAVIGATION ----------------
+function showSection(sectionId){
+  document.getElementById('dashboard').style.display='none';
+  document.getElementById('challengeSection').style.display='none';
+  document.getElementById('badgeSection').style.display='none';
+  document.getElementById(sectionId).style.display='block';
+}
+
+// ---------------- CHALLENGES ----------------
+function completeChallenge(type,xp){
+  alert(`Challenge ${type} completed! +${xp} XP`);
+  addXP(xp);
+}
+
+// ---------------- BADGE BOOK ----------------
+let currentPage = 1;
+function openBook(){ alert("Book opened! Use arrows to flip pages."); }
+function nextPage(){ if(currentPage<3){ document.getElementById('page'+currentPage).classList.add('hidden'); currentPage++; document.getElementById('page'+currentPage).classList.remove('hidden'); }}
+function prevPage(){ if(currentPage>1){ document.getElementById('page'+currentPage).classList.add('hidden'); currentPage--; document.getElementById('page'+currentPage).classList.remove('hidden'); }}
+
+// ---------------- XP, LEVEL, RANK ----------------
+function addXP(amount){
+  playerXP += amount;
+  while(playerXP>=100){
+    playerXP -= 100;
+    playerLevel++;
+    checkRankUp();
+  }
+  updateDisplay();
+}
+function updateDisplay(){
+  document.getElementById('level').textContent = playerLevel;
+  const rankObj = rankThresholds.find(r=>r.rank===currentRank);
+  document.getElementById('rankDisplay').textContent = `${currentRank} ${rankObj.symbol}`;
+  document.getElementById('rankDisplaySymbol').textContent = `${currentRank} ${rankObj.symbol}`;
+  document.getElementById('xpBar').style.width = playerXP + '%';
+}
+function checkRankUp(){
+  for(let i=rankThresholds.length-1;i>=0;i--){
+    if(playerLevel >= rankThresholds[i].level && currentRank !== rankThresholds[i].rank){
+      currentRank = rankThresholds[i].rank;
+      showRankUp(currentRank);
+      break;
+    }
+  }
+}
+
+// ---------------- RANK-UP ANIMATION ----------------
+function showRankUp(newRank){
+  const rankDiv = document.getElementById('rankUp');
+  const rankText = document.getElementById('rankText');
+  const symbol = rankThresholds.find(r=>r.rank===newRank).symbol;
+  rankText.textContent = `⭐ ${newRank.toUpperCase()} ${symbol}`;
+  rankDiv.classList.remove('hidden'); rankDiv.style.opacity=1; rankDiv.style.bottom='-100px';
+  let pos=-100;
+  const interval = setInterval(()=>{
+    if(pos>=window.innerHeight/2-50){
+      clearInterval(interval); spawnParticles();
+      setTimeout(()=>{ rankDiv.style.transition='opacity 1s'; rankDiv.style.opacity=0;
+        setTimeout(()=>{rankDiv.classList.add('hidden'); rankDiv.style.transition='';},1000);
+      },1000);
+    } else { pos+=5; rankDiv.style.bottom=pos+'px'; }
+  },16);
+  function spawnParticles(){
+    for(let i=0;i<30;i++){
+      const p = document.createElement('div'); p.classList.add('rank-particle'); document.body.appendChild(p);
+      p.style.left=(window.innerWidth/2 + (Math.random()*100-50))+'px';
+      p.style.top=(window.innerHeight/2 + (Math.random()*50-25))+'px';
+      const dx=(Math.random()*4-2)*10, dy=(Math.random()*4-2)*10;
+      p.animate([{transform:`translate(0,0)`, opacity:1},{transform:`translate(${dx}px,${dy}px)`, opacity:0}],{duration:800,easing:'ease-out'});
+      setTimeout(()=>{p.remove();},800);
+    }
+  }
+}
+
+// Initial Display
+updateDisplay();
+</script>
+</body>
+</html>
